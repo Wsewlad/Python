@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+# The program for parsing meta tag`s data from some urls (from file given as parameter (argv))
+# and comparing it with prepared data (from 'meta' module)
+
+# Parsed data are collected in list of dictionaries as well as prepared data, then compared.
+
 import sys
 from bs4 import BeautifulSoup
 import urllib.request
-import csv
-from itertools import product
 import meta
 
 if len(sys.argv) > 1:
@@ -19,7 +22,6 @@ for filepath in files:
 		file = filepath
 
 items = []
-i = 0;
 for url in file:
 	url = url.strip()
 	sauce = urllib.request.urlopen(url).read()
@@ -27,15 +29,13 @@ for url in file:
 	items.append({
 		'url': url,
 		'title': soup.title.string,
-		'description': soup.find(attrs={"name":"description"})['content']})
-	i = i + 1
-for x in items: print(x)
+		'description': soup.find(attrs={"name":"description"})['content']
+	})
+	
+for x in range(len(items)):
+	print(items[x]['url'])
+	print('OK' if items[x] == meta.mt[x] else 'NO')
 
-# file_meta =  open('meta.txt', 'r', encoding='utf-8')
-# prepared_meta_tags = file_meta.read()
-
-print(meta.mt[0])
-
-# file_meta.close()
 if isinstance(filepath, str):
 	file.close()
+
