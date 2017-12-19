@@ -15,11 +15,15 @@ if len(sys.argv) > 1:
 else:
 	files = [sys.stdin]
 
+# open file if exists, otherwise read from stdin
+
 for filepath in files:
 	if isinstance(filepath, str):
 		file = open(filepath)
 	else:
 		file = filepath
+
+# Parse data and form list of dictionaries
 
 items = []
 for url in file:
@@ -31,10 +35,19 @@ for url in file:
 		'title': soup.title.string,
 		'description': soup.find(attrs={"name":"description"})['content']
 	})
-	
+
+# Compare parsed data with prepared and print result
+
 for x in range(len(items)):
-	print(items[x]['url'])
-	print('OK' if items[x] == meta.mt[x] else 'NO')
+	print("\n" + items[x]['url'])
+	print("URL: OK" if items[x]['url'] == meta.mt[x]['url'] else 
+		"URL: NO\nPrepared url is: " + meta.mt[x]['url'])
+	print("Title: OK" if items[x]['title'] == meta.mt[x]['title'] else
+		"Title: NO\nParsed title is:\n" + items[x]['title'] +
+		"\nPrepared title is:\n" + meta.mt[x]['title'])
+	print("Description: OK" if items[x]['description'] == meta.mt[x]['description'] else
+		"Description: NO\nParsed description is:\n" + items[x]['description'] +
+		"\nPrepared description is:\n" + meta.mt[x]['description'])
 
 if isinstance(filepath, str):
 	file.close()

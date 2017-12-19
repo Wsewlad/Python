@@ -1,0 +1,89 @@
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/
+URL: OK
+Title: NO
+Parsed title is:
+Лампочки: купить лампы оптом в Киеве — «Сила света»
+Prepared title is:
+1Лампочки: купить лампы оптом в Киеве — «Сила света»
+Description: OK
+
+http://sila-sveta.com.ua/product-category/svetilniki/torgovye-i-ofisnoe-osveshhenie/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/svetilniki/promyshlennoe-osveshhenie/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/svetilniki/
+URL: OK
+Title: OK
+Description: NO
+Parsed description is:
+Оптовые продажи светильников для наружного, промышеленного, офисного и торгового освещения от официального дистрибьютора «Сила Света».
+Prepared description is:
+1Оптовые продажи светильников для наружного, промышеленного, офисного и торгового освещения от официального дистрибьютора «Сила Света».
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/gazorazryadnye/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/komplektuyushhie/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/lyuminestsentnye/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/svetilniki/naruzhnoe-osveshhenie/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/gazorazryadnye/natrievye/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/komplektuyushhie/soedinitelnye-elementy/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/svetilniki/perenosnue-svetilniki/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/elektroustanovochnye-izdeliya/rozetki/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/gazorazryadnye/rtutnye/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/led/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/istochnik-sveta/spetsialnye/
+URL: OK
+Title: OK
+Description: OK
+
+http://sila-sveta.com.ua/product-category/komplektuyushhie/startery/
+URL: NO
+Prepared url is: http://sila-sveta.com.ua/product-category/komplektuyushhie/startery1/
+Title: OK
+Description: OK
