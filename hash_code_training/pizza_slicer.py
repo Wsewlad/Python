@@ -54,6 +54,12 @@ def print_pizza(pizza):
         print(row)
 
 
+def print_result(Slist):
+    print(len(Slist))
+    for s in Slist:
+        print(s["r1"], s["c1"], s["r2"], s["c2"])
+
+
 def check_slice_size(r2, c2):
     if r2 < R and c2 < C:
         if (r2 + 1) * (c2 + 1) <= H:
@@ -76,32 +82,30 @@ def find_slice(pizza):
         last_slice["r2"] += L
     elif last_slice["c2"] + L < C:
         last_slice["c2"] += L
-    end_map = False
 
-    while not end_map:
+    tm = check_ingredients(pizza, last_slice)
+    while tm["t"] < L or tm["m"] < L:
         if check_slice_size(last_slice["r2"] + 1, last_slice["c2"]):
             last_slice["r2"] += 1
-            tm = check_ingredients(pizza, last_slice)
-            if tm["t"] >= L and tm["m"] >= L:
-                set_slice(pizza, last_slice)
         elif check_slice_size(last_slice["r2"], last_slice["c2"] + 1):
             last_slice["c2"] += 1
-            tm = check_ingredients(pizza, last_slice)
-            if tm["t"] >= L and tm["m"] >= L:
-                set_slice(pizza, last_slice)
+            print("Column added")
         else:
-            end_map = not check_place(last_slice["r2"], last_slice["c2"])
             break
-
-    if end_map:
+        print(tm)
+        tm = check_ingredients(pizza, last_slice)
+    if tm["t"] >= L and tm["m"] >= L:
+        set_slice(pizza, last_slice)
         return True
     return False
+
 
 
 
 if len(sys.argv) > 1:
     fname = sys.argv[1]
     S = 0
+    Slist = []
     if not os.path.isfile(fname):
         print("Oops... File '" + fname + "' doesn't exists or is a folder!")
     else:
@@ -129,11 +133,12 @@ if len(sys.argv) > 1:
             print("Max ingredients in Slice:", H)
             print("Min ingredients in Slice:", MinIngredientsInSlice)
 
-            while not find_slice(pizza):
+            while find_slice(pizza):
                 S += 1
+                Slist.append(last_slice.copy())
 
             print_pizza(pizza)
-            print(S)
+            print_result(Slist)
 
 
 
