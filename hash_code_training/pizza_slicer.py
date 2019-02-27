@@ -24,25 +24,79 @@ S - number of slices (0 <= AND <= R * C)
 """
 
 
-def find_first_ing(pizza):
+def find_slice_start(pizza):
     for r in range(0, R):
         for c in range(0, C):
             if len(pizza[r][c]) == 1:
-                return [r, c]
+                return {"r": r, "c": c}
 
 
-#def find_slice(pizzaToSlice):
+def check_ingredients(pizza, last_slice):
+    t = 0
+    m = 0
+    for i in range(last_slice["r1"], last_slice["r2"] + 1):
+        for j in range(last_slice["c1"], last_slice["c2"] + 1):
+            if pizza[i][j] == 'T':
+                t += 1
+            elif pizza[i][j] == 'M':
+                m += 1
+    return {"t": t, "m": m}
 
 
-def set_found_slice(pizza, r1, c1, r2, c2):
-    for i in range(r1, r2+1):
-        for j in range(c1, c2+1):
+def set_slice(pizza, last_slice):
+    for i in range(last_slice["r1"], last_slice["r2"] + 1):
+        for j in range(last_slice["c1"], last_slice["c2"] + 1):
             pizza[i][j] += str(S)
 
 
 def print_pizza(pizza):
     for row in pizza:
         print(row)
+
+
+def check_slice_size(r2, c2):
+    if r2 < R and c2 < C:
+        if (r2 + 1) * (c2 + 1) <= H:
+            return True
+    return False
+
+
+def check_place(r2, c2):
+    if r2 < R and c2 < C:
+        return True
+    return False
+
+
+def find_slice(pizza):
+    start = find_slice_start(pizza)
+    last_slice["r2"] = last_slice["r1"] = start["r"]
+    last_slice["c2"] = last_slice["c1"] = start["c"]
+
+    if last_slice["r2"] + L < R:
+        last_slice["r2"] += L
+    elif last_slice["c2"] + L < C:
+        last_slice["c2"] += L
+    end_map = False
+
+    while not end_map:
+        if check_slice_size(last_slice["r2"] + 1, last_slice["c2"]):
+            last_slice["r2"] += 1
+            tm = check_ingredients(pizza, last_slice)
+            if tm["t"] >= L and tm["m"] >= L:
+                set_slice(pizza, last_slice)
+        elif check_slice_size(last_slice["r2"], last_slice["c2"] + 1):
+            last_slice["c2"] += 1
+            tm = check_ingredients(pizza, last_slice)
+            if tm["t"] >= L and tm["m"] >= L:
+                set_slice(pizza, last_slice)
+        else:
+            end_map = not check_place(last_slice["r2"], last_slice["c2"])
+            break
+
+    if end_map:
+        return True
+    return False
+
 
 
 if len(sys.argv) > 1:
@@ -64,19 +118,23 @@ if len(sys.argv) > 1:
 
             TCount = sum(x.count('T') for x in pizza)
             MCount = sum(x.count('M') for x in pizza)
-            MaxSliceNbr = min(TCount, MCount)
-            MidSliceNbr = int((R * C) / MaxSliceNbr)
-            print(TCount)
-            print(MCount)
-            print(MidSliceNbr)
 
-            set_found_slice(pizza, 0, 0, 1, 4)
-            S += 1
+            AllIngredients = TCount * MCount
+            MinIngredientsInSlice = L * 2
+            last_slice = {"r1": 0, "c1": 0, "r2": 0, "c2": 0}
+
+            print("Tomatos:", TCount)
+            print("Mushrroms:", MCount)
+            print("Min of each ingredient in Slice:", L)
+            print("Max ingredients in Slice:", H)
+            print("Min ingredients in Slice:", MinIngredientsInSlice)
+
+            while not find_slice(pizza):
+                S += 1
 
             print_pizza(pizza)
             print(S)
 
-            print(find_first_ing(pizza))
 
 
 
