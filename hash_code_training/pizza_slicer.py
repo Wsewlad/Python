@@ -75,18 +75,25 @@ def check_place(r2, c2):
 
 def find_slice(pizza):
     start = find_slice_start(pizza)
+    print("Start:", start)
     last_slice["r2"] = last_slice["r1"] = start["r"]
     last_slice["c2"] = last_slice["c1"] = start["c"]
+
+    print("Init slice:", last_slice)
 
     if last_slice["r2"] + L < R:
         last_slice["r2"] += L
     elif last_slice["c2"] + L < C:
         last_slice["c2"] += L
 
+    print("First slice:", last_slice)
+
     tm = check_ingredients(pizza, last_slice)
-    while tm["t"] < L or tm["m"] < L:
+    while 1:
+        print("While loop")
         if check_slice_size(last_slice["r2"] + 1, last_slice["c2"]):
             last_slice["r2"] += 1
+            print("Row added")
         elif check_slice_size(last_slice["r2"], last_slice["c2"] + 1):
             last_slice["c2"] += 1
             print("Column added")
@@ -94,6 +101,7 @@ def find_slice(pizza):
             break
         print(tm)
         tm = check_ingredients(pizza, last_slice)
+
     if tm["t"] >= L and tm["m"] >= L:
         set_slice(pizza, last_slice)
         return True
