@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import sys
 from state import State
 from heapq import heappush, heappop, heapify
 import re
@@ -14,8 +15,8 @@ class Puzzle:
         self.notValidatedTiles = set()
         self.validatedTiles = set()
 
-    def validate_tiles(self, tilesList):
-        res = list(filter(None, map(str.strip, tilesList)))
+    def validate_tiles(self, tilesLine):
+        res = tilesLine.split(" ")
         if len(res) != self.n:
             return {"status": False, "result": res, "reason": "Wrong number of tiles"}
         for tile in res:
@@ -31,36 +32,37 @@ class Puzzle:
         return {"status": True, "result": res}
 
 
-    def parse_input_file(self, fname):
-        puzzle = []
-        with open(fname, "r") as file:
-            for line in file:
-                value = line.split("#")[0].strip()
-                if value.isdigit():
-                    self.n = int(value)
-                    print(value)
-                    break
-
-            if self.n == 0:
-                print("No valid Puzzle size found")
+    def parse_content(self, content):
+        contentList = list(filter(None, map(str.strip, content.strip().split("\n"))))
+        firstTilesLineIdx = 0
+        for idx in range(0, len(contentList)):
+            value = contentList[idx].split("#")[0].strip()
+            if value.isdigit():
+                self.n = int(value)
+                print(value)
+                firstTilesLineIdx = idx + 1
+                break
+        if self.n == 0:
+            print("No valid Puzzle size found")
+            return 0
+        if len(contentList) - firstTilesLineIdx < self.n:
+            print("Wrong number of tiles")
+            return 0
+        self.notValidatedTiles = {str(i) for i in range(0, self.n * self.n)}
+        for idx in range(firstTilesLineIdx, len(contentList)):
+            if contentList[idx].strip().startswith("#"):
+                continue
+            validation_result = self.validate_tiles(re.sub('\s+', ' ', contentList[idx]).split("#")[0])
+            if validation_result["status"] == False:
+                print(validation_result["reason"])
                 return 0
+            self.inputData.append(validation_result["result"])
+            if len(self.inputData) == self.n:
+                break
+        if len(self.notValidatedTiles) > 0:
+            print("Wrong number of tiles")
+            return 0
 
-            self.notValidatedTiles = {str(i) for i in range(0, self.n * self.n)}
-
-            puzzleDatalines = file.readlines()
-            if len(puzzleDatalines) < self.n:
-                print("No valid number of data rows")
-                return 0
-
-            for line in puzzleDatalines:
-                if line.strip().startswith("#"):
-                    continue
-                validation_result = self.validate_tiles(re.sub('\s+', ' ', line).split("#")[0].split(" ", self.n - 1))
-                if validation_result["status"] == False:
-                    print(validation_result["reason"])
-                    return 0
-                print(validation_result["result"])
-                
 
     def f(self, current):
         """ Heuristic Function to calculate hueristic value f(x) = h(x) + g(x) """
@@ -105,10 +107,7 @@ class Puzzle:
 
 
     def solve(self):
-        """ Accept Start and Goal Puzzle state"""
-        print("Enter the start state matrix \n")
-        start = self.accept()
-
+        generate_goal_data()
         start = State(start,0,0)
         start.fval = self.f(start,goal)
         """ Put the start node in the open list"""

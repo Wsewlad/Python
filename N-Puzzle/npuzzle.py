@@ -12,8 +12,13 @@ if len(sys.argv) > 1:
     if not os.path.isfile(fname):
         print("Oops... File '" + fname + "' doesn't exists or is a folder!")
     else:
-        puz.parse_input_file(fname)
-
-
+        with open(fname, "r") as file:
+            if puz.parse_content(file.read()) == 0:
+                exit()
+else:
+    print("Write initial puzzle state:")
+    if puz.parse_content(sys.stdin.read()) == 0:
+        exit()
+print(puz.inputData)
 # puz = Puzzle(3)
 # puz.solve()
