@@ -2,6 +2,7 @@
 
 from state import State
 from heapq import heappush, heappop, heapify
+import re
 
 class Puzzle:
     def __init__(self):
@@ -10,16 +11,24 @@ class Puzzle:
         self.closed = []
         self.inputData = []
         self.goal = []
-        self.notValidatedTiles = {}
-        self.validatedTiles = {}
+        self.notValidatedTiles = set()
+        self.validatedTiles = set()
 
-
-    def validate_tiles(self, list):
-        res = filter(None, map(str.strip, list))
-         if len(list) != self.n:
+    def validate_tiles(self, tilesList):
+        res = list(filter(None, map(str.strip, tilesList)))
+        if len(res) != self.n:
             return {"status": False, "result": res, "reason": "Wrong number of tiles"}
-          .strip().isnumeric()
-         return {"status": True, "result": res}
+        for tile in res:
+            if tile.isdigit() == False:
+                return {"status": False, "result": res, "reason": "Tile '{}' is not number or is negative".format(tile)}
+            if tile in self.validatedTiles:
+                return {"status": False, "result": res, "reason": "Tile '{}' duplicated".format(tile)}
+            if tile in self.notValidatedTiles:
+                self.validatedTiles.add(tile)
+                self.notValidatedTiles.remove(tile)
+            else:
+                return {"status": False, "result": res, "reason": "Tile '{}' is not in range 0:{}".format(tile, self.n * self.n)}
+        return {"status": True, "result": res}
 
 
     def parse_input_file(self, fname):
@@ -27,16 +36,16 @@ class Puzzle:
         with open(fname, "r") as file:
             for line in file:
                 value = line.split("#")[0].strip()
-                if value.isnumeric():
+                if value.isdigit():
                     self.n = int(value)
                     print(value)
                     break
 
             if self.n == 0:
-                print("No Puzzle size found")
+                print("No valid Puzzle size found")
                 return 0
 
-            self.notValidatedTiles = {i for i in range(1, self.n * self.n)}
+            self.notValidatedTiles = {str(i) for i in range(0, self.n * self.n)}
 
             puzzleDatalines = file.readlines()
             if len(puzzleDatalines) < self.n:
@@ -44,23 +53,14 @@ class Puzzle:
                 return 0
 
             for line in puzzleDatalines:
-                validation_result = validate_tiles(line.split("#")[0].split(" ", self.n - 1))
-                if (validation_result.):
-
-
-                tilesList = list(map(self.tile_validation, ))
-                # if len(tilesList) == self.n:
-                #     puzzle.append(tilesList)
-                # else:
-                #     print("Line '%s' is not valid" % line)
-                #     return 0
-                print(tilesList)
-
-        # for i in range(0,self.n):
-        #     temp = input().split(" ")
-        #     puz.append(temp)
-        # return puz
-
+                if line.strip().startswith("#"):
+                    continue
+                validation_result = self.validate_tiles(re.sub('\s+', ' ', line).split("#")[0].split(" ", self.n - 1))
+                if validation_result["status"] == False:
+                    print(validation_result["reason"])
+                    return 0
+                print(validation_result["result"])
+                
 
     def f(self, current):
         """ Heuristic Function to calculate hueristic value f(x) = h(x) + g(x) """
