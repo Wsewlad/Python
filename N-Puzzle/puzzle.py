@@ -8,12 +8,13 @@ import re
 class Puzzle:
     def __init__(self):
         self.n = 0
-        self.opened = [5, 7, 9, 1, 3]
+        self.opened = []
         self.closed = []
         self.initialData = []
         self.goalData = []
         self.notValidatedTiles = set()
         self.validatedTiles = set()
+        self.solved = False
 
         heapify(self.opened)
         heapify(self.closed)
@@ -76,14 +77,14 @@ class Puzzle:
     def h(self, current):
         """ Calculates the different between the given puzzles """
         temp = 0
-        for i in range(0,self.n):
-            for j in range(0,self.n):
-                if current.data[i][j] != self.goalData[i][j] and current.data[i][j] != '_':
+        for i in range(0, self.n):
+            for j in range(0, self.n):
+                if current.data[i][j] != self.goalData[i][j] and current.data[i][j] != '0':
                     temp += 1
         return temp
 
 
-    def generate_goal_data():
+    def generate_goal_data(self):
         nbr = self.n * self.n
         self.goalData = [[0] * self.n for i in range(self.n)]
         d = "r"
@@ -91,10 +92,10 @@ class Puzzle:
         j = 0
         for k in range(1, nbr):
             if d == "r": # right
-                if j < n and self.goalData[i][j] == 0: self.goalData[i][j] = k
+                if j < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
                 else: i += 1; j -= 1; d = "d"
             if d == "d": # down
-                if i < n and self.goalData[i][j] == 0: self.goalData[i][j] = k
+                if i < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
                 else: i -= 1; j -= 1; d = "l"
             if d == "l": # left
                 if j >= 0 and self.goalData[i][j] == 0: self.goalData[i][j] = k
@@ -103,7 +104,7 @@ class Puzzle:
                 if i >= 0 and self.goalData[i][j] == 0: self.goalData[i][j] = k
                 else: i += 1; j += 1; d = "r"
             if d == "r": # right
-                if j < n and self.goalData[i][j] == 0: self.goalData[i][j] = k
+                if j < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
             if   d == "r": j += 1
             elif d == "d": i += 1
             elif d == "l": j -= 1
@@ -111,26 +112,21 @@ class Puzzle:
 
 
     def solve(self):
-        generate_goal_data()
-        initialState = State(self.inputData, 0, 0)
+        self.generate_goal_data()
+        initialState = State(self.initialData, 0, 0)
         initialState.fval = self.f(self.initialData)
         heappush(self.opened, initialState)
-        while True:
-            cur = self.open[0]
-            print("")
-            print("  | ")
-            print("  | ")
-            print(" \\\'/ \n")
-            for i in cur.data:
-                for j in i:
-                    print(j,end=" ")
-                print("")
-            """ If the difference between current and goal node is 0 we have reached the goal node"""
-            if(self.h(cur.data,goal) == 0):
-                break
-            for i in cur.generate_child():
-                i.fval = self.f(i,goal)
-                self.open.append(i)
-            self.closed.append(cur)
-            del self.open[0]
-            self.open.sort(key = lambda x:x.fval, reverse=False)
+
+        while self.opened.count() != 0 and self.solved != True:
+            currentState = heappop(self.opened)
+            if self.h(cur.data, goal) == 0:
+                self.solved = True
+            else:
+                heappush(self.closed, currentState)
+
+                for i in cur.generate_child():
+                    i.fval = self.f(i,goal)
+                    self.open.append(i)
+                self.closed.append(cur)
+                del self.open[0]
+                self.open.sort(key = lambda x:x.fval, reverse=False)

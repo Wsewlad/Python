@@ -19,6 +19,6 @@ else:
     print("Write initial puzzle state:")
     if puz.parse_content(sys.stdin.read()) == 0:
         exit()
-print(puz.inputData)
+print(puz.initialData)
 # puz = Puzzle(3)
-# puz.solve()
+puz.solve()

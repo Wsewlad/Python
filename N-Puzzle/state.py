@@ -8,6 +8,9 @@ class State:
         self.level = level
         self.fval = fval
 
+    def __lt__(self, other):
+        return self.fval < other.fval
+
     def expand(self):
         x,y = self.find(self.data, '0')
         val_list = [[x,y-1], [x,y+1], [x-1,y], [x+1,y]]
