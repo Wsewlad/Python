@@ -110,9 +110,34 @@ class Puzzle:
             elif d == "l": j -= 1
             elif d == "u": i -= 1
 
+    @staticmethod
+    def generate_one_line(data):
+        line_data = []
+        for line in data:
+            for x in line:
+                line_data.append(int(x))
+        return line_data
+
+    def inversions_count(self, line_input, line_goal):
+        inv = 0
+        for i in range(self.n * self.n - 1):
+            for j in range(i + 1, self.n * self.n):
+                if line_goal.index(line_input[i]) > line_goal.index(line_input[j]):
+                    inv += 1
+        return inv
+
+    def is_solvable(self):
+        line_input = self.generate_one_line(self.initialData)
+        line_goal = self.generate_one_line(self.goalData)
+        inv_count = self.inversions_count(line_input, line_goal)
+        check_zero_position = abs(line_input.index(0) // self.n - line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - line_goal.index(0) % self.n)
+        if check_zero_position % 2 == 0 and inv_count % 2 == 0:
+            return True
+        if check_zero_position % 2 == 1 and inv_count % 2 == 1:
+            return True
+        return False
 
     def solve(self):
-        self.generate_goal_data()
         initialState = State(self.initialData, 0, 0)
         initialState.fval = self.f(self.initialData)
         heappush(self.opened, initialState)
