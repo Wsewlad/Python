@@ -145,40 +145,45 @@ class Puzzle:
 
 
     def solve(self):
-        initialState = State(self.initialData, 0, 0)
-        goalState = State(self.goalData, 0, 0)
+        initialState = State(self.initialData, 0, 0, None)
+        goalState = State(self.goalData, 0, 0, None)
         initialState.fval = self.f(initialState)
         heappush(self.opened, initialState)
 
-        while len(self.opened) != 0 and self.solved is not True:
+        print(len(self.opened))
+        tmp = None
+        len_opened = len(self.opened)
+        while len_opened != 0 and not self.solved:
             currentState = heappop(self.opened)
+            heappush(self.closed, currentState)
             if currentState == goalState:
+                print(len(self.opened))
+                tmp = currentState
                 self.solved = True
             else:
-                heappush(self.closed, currentState)
-                currentState.print()
                 for state in currentState.expand():
                     state.fval = self.f(state)
                     in_opened = self.is_puzzle_in(state, self.opened)
                     in_closed = self.is_puzzle_in(state, self.closed)
+
                     if in_opened is None and in_closed is None:
                         heappush(self.opened, state)
                     else:
-                        if in_closed is not None:
-                            if state.fval < in_closed.fval:
+                        if self.h(state) + state.level > currentState.level + 1 + self.h(state):
+                            if in_closed is not None:
                                 self.closed.remove(in_closed)
                                 heappush(self.opened, state)
-                        else:
-                            if state.fval < in_opened.fval:
-                                in_opened.fval = state.fval
-                                in_opened.level = state.level
+            len_opened = len(self.opened)
 
+        tt = []
+        while self.is_puzzle_in(tmp, self.closed) is not None:
+            tt.append(tmp)
+            tmp = tmp.last_node
+            if tmp is None:
+                break
+            tmp = self.is_puzzle_in(tmp, self.closed)
+        tt.reverse()
+        for i in tt:
+            i.print()
 
-
-
-
-
-
-
-
-
+        print(len(tt))

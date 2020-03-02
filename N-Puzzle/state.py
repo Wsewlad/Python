@@ -1,13 +1,17 @@
 #!/usr/bin/python3
 
 class State:
-    def __init__(self, data, level, fval):
+    def __init__(self, data, level, fval, last_node):
         self.data = data
         self.level = level
         self.fval = fval
+        self.last_node = last_node
 
     def __lt__(self, other):
         return self.fval < other.fval
+
+    def __le__(self, other):
+        return self.fval <= other.fval
 
     def __eq__(self, other):
         for i in range(0, len(self.data)):
@@ -23,7 +27,7 @@ class State:
         for i in val_list:
             child = self.shuffle(self.data, x, y, i[0], i[1])
             if child is not None:
-                child_node = State(child, self.level + 1, 0)
+                child_node = State(child, self.level + 1, 0, self)
                 children.append(child_node)
         return children
 
