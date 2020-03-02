@@ -34,7 +34,7 @@ class Puzzle:
                 self.notValidatedTiles.remove(tile)
             else:
                 return {"status": False, "result": res, "reason": "Tile '{}' is not in range 0:{}".format(tile, self.n * self.n)}
-        return {"status": True, "result": res}
+        return {"status": True, "result": list(map(int, res))}
 
 
     def parse_content(self, content):
@@ -44,7 +44,6 @@ class Puzzle:
             value = contentList[idx].split("#")[0].strip()
             if value.isdigit():
                 self.n = int(value)
-                print(value)
                 firstTilesLineIdx = idx + 1
                 break
         if self.n == 0:
@@ -76,12 +75,12 @@ class Puzzle:
 
     def h(self, current):
         """ Calculates the different between the given puzzles """
-        temp = 0
+        res = 0
         for i in range(0, self.n):
             for j in range(0, self.n):
-                if current.data[i][j] != self.goalData[i][j] and current.data[i][j] != '0':
-                    temp += 1
-        return temp
+                i2, j2 = current.find(self.goalData, current.data[i][j])
+                res += abs(i - i2) + abs(j - j2)
+        return res
 
 
     def generate_goal_data(self):
@@ -137,36 +136,42 @@ class Puzzle:
             return True
         return False
 
+    def is_puzzle_in(self, puzzle, list):
+        for p in list:
+            if p == puzzle:
+                return p
+        return None
+
+
+
     def solve(self):
         initialState = State(self.initialData, 0, 0)
+        goalState = State(self.goalData, 0, 0)
         initialState.fval = self.f(initialState)
         heappush(self.opened, initialState)
 
-        while len(self.opened) != 0 and self.solved != True:
+        while len(self.opened) != 0 and self.solved is not True:
             currentState = heappop(self.opened)
-            if self.h(currentState) == 0:
+            if currentState == goalState:
                 self.solved = True
             else:
                 heappush(self.closed, currentState)
+                currentState.print()
                 for state in currentState.expand():
                     state.fval = self.f(state)
-                    if state not in self.opened and state not in self.closed:
-                        self.opened.remove(state)
-                        print(len(self.opened))
+                    in_opened = self.is_puzzle_in(state, self.opened)
+                    in_closed = self.is_puzzle_in(state, self.closed)
+                    if in_opened is None and in_closed is None:
+                        heappush(self.opened, state)
                     else:
-                        if state in self.closed:
-                            idx = self.closed.index(state)
-                            if state.fval < self.closed[idx].fval:
-                                heappop(self.closed)
+                        if in_closed is not None:
+                            if state.fval < in_closed.fval:
+                                self.closed.remove(in_closed)
                                 heappush(self.opened, state)
                         else:
-                            idx = self.opened.index(state)
-                            if state.fval < self.opened[idx].fval:
-                                self.opened[idx].fval = state.fval
-                            print(len(self.opened))
-        print(heappop(self.closed).data)
-
-
+                            if state.fval < in_opened.fval:
+                                in_opened.fval = state.fval
+                                in_opened.level = state.level
 
 
 
