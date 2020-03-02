@@ -71,7 +71,7 @@ class Puzzle:
 
     def f(self, current):
         """ Heuristic Function to calculate hueristic value f(x) = h(x) + g(x) """
-        return self.h(current.data) + current.level
+        return self.h(current) + current.level
 
 
     def h(self, current):
@@ -139,19 +139,41 @@ class Puzzle:
 
     def solve(self):
         initialState = State(self.initialData, 0, 0)
-        initialState.fval = self.f(self.initialData)
+        initialState.fval = self.f(initialState)
         heappush(self.opened, initialState)
 
-        while self.opened.count() != 0 and self.solved != True:
+        while len(self.opened) != 0 and self.solved != True:
             currentState = heappop(self.opened)
-            if self.h(cur.data, goal) == 0:
+            if self.h(currentState) == 0:
                 self.solved = True
             else:
                 heappush(self.closed, currentState)
+                for state in currentState.expand():
+                    state.fval = self.f(state)
+                    if state not in self.opened and state not in self.closed:
+                        self.opened.remove(state)
+                        print(len(self.opened))
+                    else:
+                        if state in self.closed:
+                            idx = self.closed.index(state)
+                            if state.fval < self.closed[idx].fval:
+                                heappop(self.closed)
+                                heappush(self.opened, state)
+                        else:
+                            idx = self.opened.index(state)
+                            if state.fval < self.opened[idx].fval:
+                                self.opened[idx].fval = state.fval
+                            print(len(self.opened))
+        print(heappop(self.closed).data)
 
-                for i in cur.generate_child():
-                    i.fval = self.f(i,goal)
-                    self.open.append(i)
-                self.closed.append(cur)
-                del self.open[0]
-                self.open.sort(key = lambda x:x.fval, reverse=False)
+
+
+
+
+
+
+
+
+
+
+

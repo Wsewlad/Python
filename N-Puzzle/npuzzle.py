@@ -23,5 +23,6 @@ if __name__ == '__main__':
     print(puz.initialData)
     puz.generate_goal_data()
     print(puz.is_solvable())
+    puz.solve()
     # puz = Puzzle(3)
     # puz.solve()
