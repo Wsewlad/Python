@@ -25,7 +25,7 @@ class Puzzle:
         if len(res) != self.n:
             return {"status": False, "result": res, "reason": "Wrong number of tiles"}
         for tile in res:
-            if tile.isdigit() == False:
+            if not tile.isdigit():
                 return {"status": False, "result": res, "reason": "Tile '{}' is not number or is negative".format(tile)}
             if tile in self.validatedTiles:
                 return {"status": False, "result": res, "reason": "Tile '{}' duplicated".format(tile)}

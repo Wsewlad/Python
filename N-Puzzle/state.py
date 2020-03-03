@@ -11,14 +11,12 @@ class State:
         return self.fval < other.fval
 
     def __eq__(self, other):
-        for i in range(0, len(self.data)):
-            if self.data[i] != other.data[i]:
-                return False
+        if self.data != other.data:
+            return False
         return True
 
     def expand(self):
         x, y = self.find(self.data, 0)
-
         val_list = [[x, y - 1], [x, y + 1], [x - 1, y], [x + 1, y]]
         children = []
         for i in val_list:
@@ -30,7 +28,7 @@ class State:
 
     def move(self, puz, x1, y1, x2, y2):
         if x2 >= 0 and x2 < len(self.data) and y2 >= 0 and y2 < len(self.data):
-            temp_puz = self.copy(puz)
+            temp_puz = [[x for x in row] for row in puz]
             temp = temp_puz[x2][y2]
             temp_puz[x2][y2] = temp_puz[x1][y1]
             temp_puz[x1][y1] = temp
@@ -38,14 +36,6 @@ class State:
         else:
             return None
 
-    def copy(self, root):
-        temp = []
-        for i in root:
-            t = []
-            for j in i:
-                t.append(j)
-            temp.append(t)
-        return temp    
             
     def find(self, puz, x):
         for i in range(0, len(self.data)):
