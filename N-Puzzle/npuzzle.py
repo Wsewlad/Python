@@ -12,6 +12,7 @@ if __name__ == '__main__':
         Slist = []
         if not os.path.isfile(fname):
             print("Oops... File '" + fname + "' doesn't exists or is a folder!")
+            exit()
         else:
             with open(fname, "r") as file:
                 if puz.parse_content(file.read()) == 0:
@@ -25,5 +26,3 @@ if __name__ == '__main__':
     print(puz.is_solvable())
     if puz.is_solvable():
         puz.solve()
-    # puz = Puzzle(3)
-    # puz.solve()

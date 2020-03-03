@@ -69,12 +69,10 @@ class Puzzle:
 
 
     def f(self, current):
-        """ Heuristic Function to calculate hueristic value f(x) = h(x) + g(x) """
         return self.h(current) + current.level
 
 
     def h(self, current):
-        """ Calculates the different between the given puzzles """
         res = 0
         for i in range(0, self.n):
             for j in range(0, self.n):
