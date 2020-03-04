@@ -3,6 +3,7 @@
 import sys
 from state import State
 from heapq import heappush, heappop, heapify
+import re
 
 class Puzzle:
     def __init__(self):
@@ -35,23 +36,42 @@ class Puzzle:
         return list(map(int, res))
 
 
+
+    """
+    def __validate_tiles(self, tilesLine):
+        res = tilesLine.split(" ")
+        if len(res) != self.n:
+            return {"status": False, "result": res, "reason": "Wrong number of tiles"}
+        for tile in res:
+            if tile.isdigit() == False:
+                return {"status": False, "result": res, "reason": "Tile '{}' is not number or is negative".format(tile)}
+            if tile in self.validatedTiles:
+                return {"status": False, "result": res, "reason": "Tile '{}' duplicated".format(tile)}
+            if tile in self.notValidatedTiles:
+                self.validatedTiles.add(tile)
+                self.notValidatedTiles.remove(tile)
+            else:
+                return {"status": False, "result": res, "reason": "Tile '{}' is not in range 0:{}".format(tile, self.n * self.n)}
+        return {"status": True, "result": list(map(int, res))}
+    """
+
     def parse_content(self, content):
-        content_list = list(filter(None, map(str.strip, content.strip().split("\n"))))
-        for idx, value in enumerate(content_list):
+        contentList = list(filter(None, map(str.strip, content.strip().split("\n"))))
+        for idx, value in enumerate(contentList):
             v = value.split("#")[0].strip()
             if v.isdigit():
                 self.n = int(v)
                 self.data_len = self.n ** 2
-                content_list = content_list[idx + 1:]
+                contentList = contentList[idx + 1:]
                 break
         else:
             raise Exception('*', "No valid Puzzle size found")
 
-        if len(content_list) < self.n:
+        if len(contentList) < self.n:
             raise Exception('*', "Wrong number of tiles")
 
         self.notValidatedTiles = [str(i) for i in range(self.data_len)]
-        for value in content_list:
+        for value in contentList:
             if value.strip().startswith("#"):
                 continue
             validation_result = self.validate_tiles(value.split("#")[0])
@@ -61,6 +81,37 @@ class Puzzle:
         if len(self.notValidatedTiles) != len(self.validatedTiles):
             raise Exception('*', "Wrong number of tiles")
 
+    """
+    def parse_content(self, content):
+        contentList = list(filter(None, map(str.strip, content.strip().split("\n"))))
+        firstTilesLineIdx = 0
+        for idx in range(0, len(contentList)):
+            value = contentList[idx].split("#")[0].strip()
+            if value.isdigit():
+                self.n = int(value)
+                firstTilesLineIdx = idx + 1
+                break
+        if self.n == 0:
+            print("No valid Puzzle size found")
+            return 0
+        if len(contentList) - firstTilesLineIdx < self.n:
+            print("Wrong number of tiles")
+            return 0
+        self.notValidatedTiles = {str(i) for i in range(0, self.n * self.n)}
+        for idx in range(firstTilesLineIdx, len(contentList)):
+            if contentList[idx].strip().startswith("#"):
+                continue
+            validation_result = self.validate_tiles(re.sub('\s+', ' ', contentList[idx]).split("#")[0])
+            if validation_result["status"] == False:
+                print(validation_result["reason"])
+                return 0
+            self.initialData.append(validation_result["result"])
+            if len(self.initialData) == self.n:
+                break
+        if len(self.notValidatedTiles) > 0:
+            print("Wrong number of tiles")
+            return 0
+    """
 
     def f(self, current):
         return self.h(current) + current.level
@@ -147,7 +198,6 @@ class Puzzle:
         while len_opened != 0 and not self.solved:
             currentState = heappop(self.opened)
             heappush(self.closed, currentState)
-            print(len(self.closed))
             if currentState == goalState:
                 print(len(self.opened))
                 tmp = currentState
