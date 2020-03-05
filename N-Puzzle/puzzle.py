@@ -121,19 +121,25 @@ class Puzzle:
         line_goal = self.generate_one_line(self.goalData)
         inv_count = self.inversions_count(line_input, line_goal)
         check_zero_position = abs(line_input.index(0) // self.n - line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - line_goal.index(0) % self.n)
+
         if check_zero_position % 2 == 0 and inv_count % 2 == 0:
             return True
         if check_zero_position % 2 == 1 and inv_count % 2 == 1:
             return True
-        return False
+        if self.n % 2:
+            return not inv_count % 1
+        else:
+            pos = line_goal.index(0) // self.n
+            if pos & 1:
+                return not inv_count % 1
+            else:
+                return inv_count % 1
 
     def is_puzzle_in(self, puzzle, list):
         for p in list:
             if p == puzzle:
                 return p
         return None
-
-
 
     def solve(self):
         initialState = State(self.initialData, 0, 0, None)
