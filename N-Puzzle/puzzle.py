@@ -143,24 +143,39 @@ class Puzzle:
 
     def solve(self):
         initial_state = State(self.initial_data)
-        initial_state.fval = self.f(initial_state)
-        heappush(self.opened, initial_state)
+        #initial_state.fval = self.f(initial_state)
+        heappush(self.opened, (initial_state.fval, initial_state))
         goal_state = None
         while len(self.opened) > 0:
-            current_state = heappop(self.opened)
+            current_state = heappop(self.opened)[1]
+            #print(current_state.fval)
+            #heappush(self.closed, (current_state.fval, current_state))
             self.closed.add(current_state)
-            print(len(self.opened))
-            # if current_state.data == self.goal_data:
-            #     goal_state = current_state
-            #     break
+            if current_state.data == self.goal_data:
+                goal_state = current_state
+                break
             for state in current_state.expand():
-                if state.data == self.goal_data:
-                    goal_state = current_state
-                    return
-                found_states = self.opened + self.closed
-                if state.data not in [st.data for st in found_states]:
+                #found_states = self.opened + self.closed
+                if state.data in [st.data for st in self.closed]:
+                    continue
+                if state.data not in [st[1].data for st in self.opened] and state.fval < current_state.fval:
                     state.fval = self.f(state)
-                    heappush(self.opened, state)
+                    heappush(self.opened, (state.fval, state))
+
+                # if state.data in [st[1].data for st in self.opened]:
+                #     state.fval = self.f(state)
+                #     for x in self.opened:
+                #         if x[1].data == state.data:
+                #             if state.level < x[1].level:
+                #                 print(x[1].fval)
+                #                 x[1].fval = state.fval
+                #                 print(x[1].fval)
+                #                 x[1].level = state.level
+                #                 x[1].last_node = state.last_node
+                #             break
+                # else:
+                #     state.fval = self.f(state)
+                #     heappush(self.opened, (state.fval, state))
 
         path_to_goal = []
         temp_state = goal_state
@@ -173,3 +188,4 @@ class Puzzle:
         path_to_goal.reverse()
         for i in path_to_goal:
             i.print()
+        print(len(path_to_goal))
