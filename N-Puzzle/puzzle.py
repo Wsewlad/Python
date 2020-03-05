@@ -1,37 +1,38 @@
 #!/usr/bin/python3
 
-import sys
+import datetime
 from state import State
 from heapq import heappush, heappop, heapify
+from itertools import chain
 
 class Puzzle:
     def __init__(self):
         self.n = 0
         self.data_len = 0
         self.opened = []
-        self.closed = []
-        self.initialData = []
-        self.goalData = []
-        self.notValidatedTiles = []
-        self.validatedTiles = []
-        self.solved = False
+        #self.closed = []
+        self.closed = set()
+        self.initial_data = []
+        self.goal_data = []
+        self.not_validated_tiles = []
+        self.validated_tiles = []
 
         heapify(self.opened)
-        heapify(self.closed)
+        #heapify(self.closed)
 
 
-    def validate_tiles(self, tilesLine):
-        res = tilesLine.split()
+    def validate_tiles(self, tiles_line):
+        res = tiles_line.split()
         if len(res) != self.n:
             raise Exception('*', "Wrong number of tiles")
         for tile in res:
             if not tile.isdigit():
                 raise Exception('*', f"Tile '{tile}' is not number or is negative")
-            if tile in self.validatedTiles:
+            if tile in self.validated_tiles:
                 raise Exception('*', f"Tile '{tile}' duplicated")
-            if not tile in self.notValidatedTiles:
+            if not tile in self.not_validated_tiles:
                 raise Exception('*', f"Tile '{tile}' is not in range 0:{self.data_len}")
-            self.validatedTiles.append(tile)
+            self.validated_tiles.append(tile)
         return list(map(int, res))
 
 
@@ -50,15 +51,15 @@ class Puzzle:
         if len(content_list) < self.n:
             raise Exception('*', "Wrong number of tiles")
 
-        self.notValidatedTiles = [str(i) for i in range(self.data_len)]
+        self.not_validated_tiles = [str(i) for i in range(self.data_len)]
         for value in content_list:
             if value.strip().startswith("#"):
                 continue
             validation_result = self.validate_tiles(value.split("#")[0])
-            self.initialData.append(validation_result)
-            if len(self.initialData) == self.n:
+            self.initial_data.append(validation_result)
+            if len(self.initial_data) == self.n:
                 break
-        if len(self.notValidatedTiles) != len(self.validatedTiles):
+        if len(self.not_validated_tiles) != len(self.validated_tiles):
             raise Exception('*', "Wrong number of tiles")
 
 
@@ -70,43 +71,48 @@ class Puzzle:
         res = 0
         for i in range(0, self.n):
             for j in range(0, self.n):
-                i2, j2 = current.find(self.goalData, current.data[i][j])
+                i2, j2 = current.find(self.goal_data, current.data[i][j])
                 res += abs(i - i2) + abs(j - j2)
         return res
 
-
     def generate_goal_data(self):
-        self.goalData = [[0] * self.n for i in range(self.n)]
+        self.goal_data = [[0] * self.n for i in range(self.n)]
         d = "r"
         i = 0
         j = 0
         for k in range(1, self.data_len):
-            if d == "r": # right
-                if j < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i += 1; j -= 1; d = "d"
-            if d == "d": # down
-                if i < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i -= 1; j -= 1; d = "l"
-            if d == "l": # left
-                if j >= 0 and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i -= 1; j += 1; d = "u"
-            if d == "u": # up
-                if i >= 0 and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i += 1; j += 1; d = "r"
-            if d == "r": # right
-                if j < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
-            if   d == "r": j += 1
-            elif d == "d": i += 1
-            elif d == "l": j -= 1
-            elif d == "u": i -= 1
+            if d == "r":  # right
+                if j < self.n and self.goal_data[i][j] == 0:
+                    self.goal_data[i][j] = k
+                else:
+                    i += 1; j -= 1; d = "d"
+            if d == "d":  # down
+                if i < self.n and self.goal_data[i][j] == 0:
+                    self.goal_data[i][j] = k
+                else:
+                    i -= 1; j -= 1; d = "l"
+            if d == "l":  # left
+                if j >= 0 and self.goal_data[i][j] == 0:
+                    self.goal_data[i][j] = k
+                else:
+                    i -= 1; j += 1; d = "u"
+            if d == "u":  # up
+                if i >= 0 and self.goal_data[i][j] == 0:
+                    self.goal_data[i][j] = k
+                else:
+                    i += 1; j += 1; d = "r"
+            if d == "r":  # right
+                if j < self.n and self.goal_data[i][j] == 0:
+                    self.goal_data[i][j] = k
+            if d == "r":
+                j += 1
+            elif d == "d":
+                i += 1
+            elif d == "l":
+                j -= 1
+            elif d == "u":
+                i -= 1
 
-    @staticmethod
-    def generate_one_line(data):
-        line_data = []
-        for line in data:
-            for x in line:
-                line_data.append(int(x))
-        return line_data
 
     def inversions_count(self, line_input, line_goal):
         inv = 0
@@ -117,8 +123,8 @@ class Puzzle:
         return inv
 
     def is_solvable(self):
-        line_input = self.generate_one_line(self.initialData)
-        line_goal = self.generate_one_line(self.goalData)
+        line_input = list(chain.from_iterable(self.initial_data))
+        line_goal = list(chain.from_iterable(self.goal_data))
         inv_count = self.inversions_count(line_input, line_goal)
         check_zero_position = abs(line_input.index(0) // self.n - line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - line_goal.index(0) % self.n)
         if check_zero_position % 2 == 0 and inv_count % 2 == 0:
@@ -127,55 +133,36 @@ class Puzzle:
             return True
         return False
 
-    def is_puzzle_in(self, puzzle, list):
-        for p in list:
-            if p == puzzle:
-                return p
-        return None
-
-
 
     def solve(self):
-        initialState = State(self.initialData, 0, 0, None)
-        goalState = State(self.goalData, 0, 0, None)
-        initialState.fval = self.f(initialState)
-        heappush(self.opened, initialState)
-
-        print(len(self.opened))
-        tmp = None
-        len_opened = len(self.opened)
-        while len_opened != 0 and not self.solved:
-            currentState = heappop(self.opened)
-            heappush(self.closed, currentState)
-            print(len(self.closed))
-            if currentState == goalState:
-                print(len(self.opened))
-                tmp = currentState
-                self.solved = True
-            else:
-                for state in currentState.expand():
+        initial_state = State(self.initial_data)
+        initial_state.fval = self.f(initial_state)
+        heappush(self.opened, initial_state)
+        goal_state = None
+        while len(self.opened) > 0:
+            current_state = heappop(self.opened)
+            self.closed.add(current_state)
+            print(len(self.opened))
+            # if current_state.data == self.goal_data:
+            #     goal_state = current_state
+            #     break
+            for state in current_state.expand():
+                if state.data == self.goal_data:
+                    goal_state = current_state
+                    return
+                found_states = self.opened + self.closed
+                if state.data not in [st.data for st in found_states]:
                     state.fval = self.f(state)
-                    in_opened = self.is_puzzle_in(state, self.opened)
-                    in_closed = self.is_puzzle_in(state, self.closed)
+                    heappush(self.opened, state)
 
-                    if in_opened is None and in_closed is None:
-                        heappush(self.opened, state)
-                    else:
-                        if self.h(state) + state.level > currentState.level + 1 + self.h(state):
-                            if in_closed is not None:
-                                self.closed.remove(in_closed)
-                                heappush(self.opened, state)
-            len_opened = len(self.opened)
-
-        tt = []
-        while self.is_puzzle_in(tmp, self.closed) is not None:
-            tt.append(tmp)
-            tmp = tmp.last_node
-            if tmp is None:
+        path_to_goal = []
+        temp_state = goal_state
+        while temp_state:
+            path_to_goal.append(temp_state)
+            temp_state = temp_state.last_node
+            if not temp_state:
                 break
-            tmp = self.is_puzzle_in(tmp, self.closed)
-        tt.reverse()
-        for i in tt:
-            i.print()
 
-        print(len(tt))
+        path_to_goal.reverse()
+        for i in path_to_goal:
+            i.print()

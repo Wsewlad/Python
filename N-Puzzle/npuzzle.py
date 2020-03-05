@@ -29,7 +29,7 @@ if __name__ == '__main__':
         else:
             raise e
 
-    print(puz.initialData)
+    print(puz.initial_data)
     puz.generate_goal_data()
     print(puz.is_solvable())
     if puz.is_solvable():

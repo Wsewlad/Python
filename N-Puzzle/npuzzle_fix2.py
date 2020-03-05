@@ -23,6 +23,7 @@ if __name__ == '__main__':
         S = 0
         Slist = []
         if not os.path.isfile(fname):
+            # print("Oops... File '" + fname + "' doesn't exists or is a folder!")
             print(f"Oops... File '{fname}'  doesn't exists or is a folder!")
             exit()
         else:

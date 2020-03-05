@@ -1,14 +1,12 @@
 #!/usr/bin/python3
-
-import sys
+import datetime
 from state import State
 from heapq import heappush, heappop, heapify
-import re
+from itertools import chain
 
 class Puzzle:
     def __init__(self):
         self.n = 0
-        self.data_len = 0
         self.opened = []
         self.closed = []
         self.initialData = []
@@ -21,6 +19,8 @@ class Puzzle:
         heapify(self.closed)
 
 
+
+
     def validate_tiles(self, tilesLine):
         res = tilesLine.split()
         if len(res) != self.n:
@@ -31,7 +31,7 @@ class Puzzle:
             if tile in self.validatedTiles:
                 raise Exception('*', f"Tile '{tile}' duplicated")
             if not tile in self.notValidatedTiles:
-                raise Exception('*', f"Tile '{tile}' is not in range 0:{self.data_len}")
+                raise Exception('*', f"Tile '{tile}' is not in range 0:{self.n ** 2}")
             self.validatedTiles.append(tile)
         return list(map(int, res))
 
@@ -58,10 +58,8 @@ class Puzzle:
     def parse_content(self, content):
         contentList = list(filter(None, map(str.strip, content.strip().split("\n"))))
         for idx, value in enumerate(contentList):
-            v = value.split("#")[0].strip()
-            if v.isdigit():
-                self.n = int(v)
-                self.data_len = self.n ** 2
+            if value.split("#")[0].strip().isdigit():
+                self.n = int(value.split("#")[0].strip())
                 contentList = contentList[idx + 1:]
                 break
         else:
@@ -70,7 +68,7 @@ class Puzzle:
         if len(contentList) < self.n:
             raise Exception('*', "Wrong number of tiles")
 
-        self.notValidatedTiles = [str(i) for i in range(self.data_len)]
+        self.notValidatedTiles = [str(i) for i in range(self.n ** 2)]
         for value in contentList:
             if value.strip().startswith("#"):
                 continue
@@ -119,57 +117,63 @@ class Puzzle:
 
     def h(self, current):
         res = 0
-        for i in range(0, self.n):
-            for j in range(0, self.n):
+        for i in range(self.n):
+            for j in range(self.n):
                 i2, j2 = current.find(self.goalData, current.data[i][j])
                 res += abs(i - i2) + abs(j - j2)
         return res
 
 
     def generate_goal_data(self):
+        nbr = self.n * self.n
         self.goalData = [[0] * self.n for i in range(self.n)]
         d = "r"
         i = 0
         j = 0
-        for k in range(1, self.data_len):
-            if d == "r": # right
+        for k in range(1, nbr):
+            if d == "r":  # right
+                if j < self.n and self.goalData[i][j] == 0:
+                    self.goalData[i][j] = k
+                else:
+                    i += 1; j -= 1; d = "d"
+            if d == "d":  # down
+                if i < self.n and self.goalData[i][j] == 0:
+                    self.goalData[i][j] = k
+                else:
+                    i -= 1; j -= 1; d = "l"
+            if d == "l":  # left
+                if j >= 0 and self.goalData[i][j] == 0:
+                    self.goalData[i][j] = k
+                else:
+                    i -= 1; j += 1; d = "u"
+            if d == "u":  # up
+                if i >= 0 and self.goalData[i][j] == 0:
+                    self.goalData[i][j] = k
+                else:
+                    i += 1; j += 1; d = "r"
+            if d == "r":  # right
                 if j < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i += 1; j -= 1; d = "d"
-            if d == "d": # down
-                if i < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i -= 1; j -= 1; d = "l"
-            if d == "l": # left
-                if j >= 0 and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i -= 1; j += 1; d = "u"
-            if d == "u": # up
-                if i >= 0 and self.goalData[i][j] == 0: self.goalData[i][j] = k
-                else: i += 1; j += 1; d = "r"
-            if d == "r": # right
-                if j < self.n and self.goalData[i][j] == 0: self.goalData[i][j] = k
-            if   d == "r": j += 1
-            elif d == "d": i += 1
-            elif d == "l": j -= 1
-            elif d == "u": i -= 1
-
-    @staticmethod
-    def generate_one_line(data):
-        line_data = []
-        for line in data:
-            for x in line:
-                line_data.append(int(x))
-        return line_data
+            if d == "r":
+                j += 1
+            elif d == "d":
+                i += 1
+            elif d == "l":
+                j -= 1
+            elif d == "u":
+                i -= 1
 
     def inversions_count(self, line_input, line_goal):
         inv = 0
-        for i in range(self.data_len - 1):
-            for j in range(i + 1, self.data_len):
+        for i in range(self.n * self.n - 1):
+            for j in range(i + 1, self.n ** 2):
                 if line_goal.index(line_input[i]) > line_goal.index(line_input[j]):
                     inv += 1
         return inv
 
     def is_solvable(self):
-        line_input = self.generate_one_line(self.initialData)
-        line_goal = self.generate_one_line(self.goalData)
+        line_input = list(chain.from_iterable(self.initialData))
+        line_goal = list(chain.from_iterable(self.goalData))
+
         inv_count = self.inversions_count(line_input, line_goal)
         check_zero_position = abs(line_input.index(0) // self.n - line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - line_goal.index(0) % self.n)
         if check_zero_position % 2 == 0 and inv_count % 2 == 0:
@@ -178,52 +182,36 @@ class Puzzle:
             return True
         return False
 
-    def is_puzzle_in(self, puzzle, list):
-        for p in list:
-            if p == puzzle:
-                return p
-        return None
-
-
 
     def solve(self):
-        initialState = State(self.initialData, 0, 0, None)
-        goalState = State(self.goalData, 0, 0, None)
+        initialState = State(self.initialData)
         initialState.fval = self.f(initialState)
         heappush(self.opened, initialState)
 
-        print(len(self.opened))
-        tmp = None
-        len_opened = len(self.opened)
-        while len_opened != 0 and not self.solved:
+        goal_state = None
+        print(datetime.datetime.now())
+        while len(self.opened) > 0:
             currentState = heappop(self.opened)
             heappush(self.closed, currentState)
-            if currentState == goalState:
+            if currentState.data == self.goalData:
                 print(len(self.opened))
-                tmp = currentState
-                self.solved = True
-            else:
-                for state in currentState.expand():
+                goal_state = currentState
+                break
+            for state in currentState.expand():
+                found_states = self.opened + self.closed
+                if state.data not in [st.data for st in found_states]:
                     state.fval = self.f(state)
-                    in_opened = self.is_puzzle_in(state, self.opened)
-                    in_closed = self.is_puzzle_in(state, self.closed)
+                    heappush(self.opened, state)
 
-                    if in_opened is None and in_closed is None:
-                        heappush(self.opened, state)
-                    else:
-                        if self.h(state) + state.level > currentState.level + 1 + self.h(state):
-                            if in_closed is not None:
-                                self.closed.remove(in_closed)
-                                heappush(self.opened, state)
-            len_opened = len(self.opened)
-
+        print(datetime.datetime.now())
+        tmp = goal_state
         tt = []
-        while self.is_puzzle_in(tmp, self.closed) is not None:
+        while tmp:
             tt.append(tmp)
             tmp = tmp.last_node
-            if tmp is None:
+            if not tmp:
                 break
-            tmp = self.is_puzzle_in(tmp, self.closed)
+
         tt.reverse()
         for i in tt:
             i.print()
