@@ -131,7 +131,14 @@ class Puzzle:
             return True
         if check_zero_position % 2 == 1 and inv_count % 2 == 1:
             return True
-        return False
+        if self.n % 2:
+            return not inv_count % 1
+        else:
+            pos = line_goal.index(0) // self.n
+            if pos & 1:
+                return not inv_count % 1
+            else:
+                return inv_count % 1
 
 
     def solve(self):
