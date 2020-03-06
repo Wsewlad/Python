@@ -1,24 +1,27 @@
 #!/usr/bin/python3
 
-import datetime
 from state import State
 from heapq import heappush, heappop, heapify
 from itertools import chain
+import datetime
 
 class Puzzle:
-    def __init__(self):
+    def __init__(self, content):
         self.n = 0
         self.data_len = 0
         self.opened = []
-        #self.closed = []
         self.closed = set()
         self.initial_data = []
         self.goal_data = []
         self.not_validated_tiles = []
         self.validated_tiles = []
+        self.opened_hash = {}
+        self.goal_state = None
+        self.solving_time = None
+        self.line_goal = []
 
         heapify(self.opened)
-        #heapify(self.closed)
+        self.parse_content(content)
 
 
     def validate_tiles(self, tiles_line):
@@ -47,10 +50,8 @@ class Puzzle:
                 break
         else:
             raise Exception('*', "No valid Puzzle size found")
-
         if len(content_list) < self.n:
             raise Exception('*', "Wrong number of tiles")
-
         self.not_validated_tiles = [str(i) for i in range(self.data_len)]
         for value in content_list:
             if value.strip().startswith("#"):
@@ -61,19 +62,38 @@ class Puzzle:
                 break
         if len(self.not_validated_tiles) != len(self.validated_tiles):
             raise Exception('*', "Wrong number of tiles")
+        self.generate_goal_data()
 
+
+    def get_manhattan_distance(self, current):
+        dist = 0
+        for i in current.oneline_data:
+            if i == 0:
+                continue
+            c = current.oneline_data.index(i)
+            g = self.line_goal.index(i)
+            x = abs(g % self.n - c % self.n)
+            y = abs(g / self.n - c / self.n)
+            dist += x + y
+        return dist
+
+
+    def get_misplaced_tiles_distance(self, current):
+        dist = 0
+        for val in current.oneline_data:
+            if val == 0:
+                continue
+            if val != 0 and current.oneline_data.index(val) != self.line_goal.index(val):
+                dist += 1
+        return dist
 
     def f(self, current):
         return self.h(current) + current.level
 
 
     def h(self, current):
-        res = 0
-        for i in range(0, self.n):
-            for j in range(0, self.n):
-                i2, j2 = current.find(self.goal_data, current.data[i][j])
-                res += abs(i - i2) + abs(j - j2)
-        return res
+        return self.get_manhattan_distance(current)
+
 
     def generate_goal_data(self):
         self.goal_data = [[0] * self.n for i in range(self.n)]
@@ -114,19 +134,19 @@ class Puzzle:
                 i -= 1
 
 
-    def inversions_count(self, line_input, line_goal):
+    def inversions_count(self, line_input):
         inv = 0
         for i in range(self.data_len - 1):
             for j in range(i + 1, self.data_len):
-                if line_goal.index(line_input[i]) > line_goal.index(line_input[j]):
+                if self.line_goal.index(line_input[i]) > self.line_goal.index(line_input[j]):
                     inv += 1
         return inv
 
     def is_solvable(self):
         line_input = list(chain.from_iterable(self.initial_data))
-        line_goal = list(chain.from_iterable(self.goal_data))
-        inv_count = self.inversions_count(line_input, line_goal)
-        check_zero_position = abs(line_input.index(0) // self.n - line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - line_goal.index(0) % self.n)
+        self.line_goal = list(chain.from_iterable(self.goal_data))
+        inv_count = self.inversions_count(line_input)
+        check_zero_position = abs(line_input.index(0) // self.n - self.line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - self.line_goal.index(0) % self.n)
         if check_zero_position % 2 == 0 and inv_count % 2 == 0:
             return True
         if check_zero_position % 2 == 1 and inv_count % 2 == 1:
@@ -134,58 +154,66 @@ class Puzzle:
         if self.n % 2:
             return not inv_count % 1
         else:
-            pos = line_goal.index(0) // self.n
+            pos = self.line_goal.index(0) // self.n
             if pos & 1:
                 return not inv_count % 1
             else:
                 return inv_count % 1
 
 
-    def solve(self):
-        initial_state = State(self.initial_data)
-        #initial_state.fval = self.f(initial_state)
-        heappush(self.opened, (initial_state.fval, initial_state))
-        goal_state = None
-        while len(self.opened) > 0:
-            current_state = heappop(self.opened)[1]
-            #print(current_state.fval)
-            #heappush(self.closed, (current_state.fval, current_state))
-            self.closed.add(current_state)
-            if current_state.data == self.goal_data:
-                goal_state = current_state
-                break
-            for state in current_state.expand():
-                #found_states = self.opened + self.closed
-                if state.data in [st.data for st in self.closed]:
-                    continue
-                if state.data not in [st[1].data for st in self.opened] and state.fval < current_state.fval:
-                    state.fval = self.f(state)
-                    heappush(self.opened, (state.fval, state))
-
-                # if state.data in [st[1].data for st in self.opened]:
-                #     state.fval = self.f(state)
-                #     for x in self.opened:
-                #         if x[1].data == state.data:
-                #             if state.level < x[1].level:
-                #                 print(x[1].fval)
-                #                 x[1].fval = state.fval
-                #                 print(x[1].fval)
-                #                 x[1].level = state.level
-                #                 x[1].last_node = state.last_node
-                #             break
-                # else:
-                #     state.fval = self.f(state)
-                #     heappush(self.opened, (state.fval, state))
-
+    def print_result(self):
         path_to_goal = []
-        temp_state = goal_state
+        temp_state = self.goal_state
         while temp_state:
             path_to_goal.append(temp_state)
             temp_state = temp_state.last_node
             if not temp_state:
                 break
-
         path_to_goal.reverse()
         for i in path_to_goal:
             i.print()
-        print(len(path_to_goal))
+
+        print(f"Complexity in time: {len(self.closed)}")
+        print(f"Complexity in size: {len(self.closed) + len(self.opened)}")
+        print(f"Number of moves: {len(path_to_goal)}")
+        print(f"Solving time: {self.solving_time}")
+
+
+    def solve(self):
+        if self.is_solvable():
+            try:
+                t1 = datetime.datetime.now()
+                initial_state = State(self.initial_data)
+                initial_state.fval = self.f(initial_state)
+                heappush(self.opened, initial_state)
+
+                self.opened_hash[initial_state.oneline_data] = initial_state
+                while len(self.opened) > 0:
+                    current_state = heappop(self.opened)
+                    self.closed.add(current_state.oneline_data)
+                    for state in current_state.expand():
+                        if state.data == self.goal_data:
+                            self.goal_state = state
+                            t2 = datetime.datetime.now()
+                            self.solving_time = t2 - t1
+                            return
+                        if state.oneline_data in self.closed:
+                            continue
+                        if state.oneline_data in self.opened_hash:
+                            e = self.opened_hash[state.oneline_data]
+                            if state.level < e.level:
+                                e.fval = self.f(state)
+                                e.last_node = state.last_node
+                                e.level = state.level
+                                e.fval = state.fval
+                        else:
+                            state.fval = self.f(state)
+                            heappush(self.opened, state)
+                            self.opened_hash[state.oneline_data] = state
+            except Exception as e:
+                raise Exception('*', f"Oops... Can`t solve Puzzle because: {e.args[0]}")
+        else:
+            raise Exception('*', f"Oops... Puzzle is not solvable!")
+
+
+

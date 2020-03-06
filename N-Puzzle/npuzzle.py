@@ -20,17 +20,12 @@ def get_content():
 if __name__ == '__main__':
     try:
         content = get_content()
-        puz = Puzzle()
-        puz.parse_content(content)
+        puz = Puzzle(content)
+        puz.solve()
+        puz.print_result()
     except Exception as e:
         if e.args[0] == '*':
             print(e.args[1])
             exit()
         else:
             raise e
-
-    print(puz.initial_data)
-    puz.generate_goal_data()
-    print(puz.is_solvable())
-    if puz.is_solvable():
-        puz.solve()

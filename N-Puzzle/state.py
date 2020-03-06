@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from copy import deepcopy
+from itertools import chain
 
 class State:
     def __init__(self, data, level=0, fval=0, last_node=None):
@@ -9,6 +10,7 @@ class State:
         self.level = level
         self.fval = fval
         self.last_node = last_node
+        self.oneline_data = tuple(list(chain.from_iterable(self.data)))
 
     def __lt__(self, other):
         return self.fval < other.fval
