@@ -4,6 +4,7 @@ from state import State
 from heapq import heappush, heappop, heapify
 from itertools import chain
 import datetime
+import math
 
 class Puzzle:
     def __init__(self, content):
@@ -78,6 +79,19 @@ class Puzzle:
         return dist
 
 
+    def get_euclidian_distance(self, current):
+        dist = 0
+        for i in current.oneline_data:
+            if i == 0:
+                continue
+            c = current.oneline_data.index(i)
+            g = self.line_goal.index(i)
+            x = (g % self.n - c % self.n) ** 2
+            y = (g / self.n - c / self.n) ** 2
+            dist += math.sqrt(x + y)
+        return dist
+
+
     def get_misplaced_tiles_distance(self, current):
         dist = 0
         for val in current.oneline_data:
@@ -86,6 +100,7 @@ class Puzzle:
             if val != 0 and current.oneline_data.index(val) != self.line_goal.index(val):
                 dist += 1
         return dist
+
 
     def f(self, current):
         return self.h(current) + current.level
@@ -175,7 +190,7 @@ class Puzzle:
 
         print(f"Complexity in time: {len(self.closed)}")
         print(f"Complexity in size: {len(self.closed) + len(self.opened)}")
-        print(f"Number of moves: {len(path_to_goal)}")
+        print(f"Number of moves: {len(path_to_goal) - 1}")
         print(f"Solving time: {self.solving_time}")
 
 
@@ -185,6 +200,12 @@ class Puzzle:
                 t1 = datetime.datetime.now()
                 initial_state = State(self.initial_data)
                 initial_state.fval = self.f(initial_state)
+
+                if initial_state.data == self.goal_data:
+                    self.goal_state = initial_state
+                    self.solving_time = 0
+                    return
+
                 heappush(self.opened, initial_state)
 
                 self.opened_hash[initial_state.oneline_data] = initial_state
@@ -210,8 +231,8 @@ class Puzzle:
                             state.fval = self.f(state)
                             heappush(self.opened, state)
                             self.opened_hash[state.oneline_data] = state
-            except Exception as e:
-                raise Exception('*', f"Oops... Can`t solve Puzzle because: {e.args[0]}")
+            except MemoryError as e:
+                raise Exception('*', f"Oops... Can`t solve Puzzle because of memory error")
         else:
             raise Exception('*', f"Oops... Puzzle is not solvable!")
 
