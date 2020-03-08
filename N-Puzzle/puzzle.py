@@ -191,14 +191,14 @@ class Puzzle:
     def is_solvable(self):
         self.line_goal = list(chain.from_iterable(self.goal_data))
         line_input = list(chain.from_iterable(self.initial_data))
-        zero_pos = line_input.index(0) / self.n + 1
+        zero_pos = int(line_input.index(0) / self.n) + 1
         inv = 0
         for idx, val in enumerate(line_input):
             if val == 0:
                 continue
             inv += self.inversions_count(line_input, val, idx)
         if self.n % 2 == 0:
-            if (self.n / 2) % 2 == 0 and (zero_pos % 2 == 1 and inv % 2 == 0) or (zero_pos % 2 == 0 and inv % 2 == 1):
+            if (self.n / 2) % 2 == 0 and ((zero_pos % 2 == 1 and inv % 2 == 0) or (zero_pos % 2 == 0 and inv % 2 == 1)):
                 return True
             elif (self.n / 2) % 2 == 1 and zero_pos % 2 == inv % 2 and zero_pos % 2 != zero_pos - 1:
                 return True
