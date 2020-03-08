@@ -25,6 +25,10 @@ if __name__ == '__main__':
                         help="choose heuristic: mn (manhattan), eu (euclidian), mp (misplaced). Manhattan is default",
                         choices=['mn', 'eu', 'mp'],
                         default='mn')
+    parser.add_argument("-a", "-algorithm",
+                        help="choose search algorithm: a (A-star), u (Uniform-cost), g (Greedy). A-star is default",
+                        choices=['a', 'u', 'g'],
+                        default='a')
     parser.add_argument("-r", "-random", help="get random input", action="store_true")
 
     args = parser.parse_args()
@@ -35,7 +39,7 @@ if __name__ == '__main__':
             content = get_content(random_file)
         else:
             content = get_content(args.f)
-        puz = Puzzle(content, args.h)
+        puz = Puzzle(content, args.h, args.a)
         puz.solve()
         puz.print_result()
     except Exception as e:

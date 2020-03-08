@@ -38,6 +38,6 @@ class State:
                 return i, line.index(x)
 
     def print(self):
-        for i in range(0, len(self.data)):
-            print(self.data[i])
+        for i in self.data:
+            print(i)
         print("\n")

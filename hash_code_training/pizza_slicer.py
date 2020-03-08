@@ -37,7 +37,7 @@ def check_ingredients(pizza, last_slice):
     for i in range(last_slice["r1"], last_slice["r2"] + 1):
         for j in range(last_slice["c1"], last_slice["c2"] + 1):
             if pizza[i][j] == 'T':
-                t += 1
+                t += 1¬
             elif pizza[i][j] == 'M':
                 m += 1
     return {"t": t, "m": m}

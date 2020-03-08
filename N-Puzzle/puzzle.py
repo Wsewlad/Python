@@ -7,7 +7,7 @@ import datetime
 import math
 
 class Puzzle:
-    def __init__(self, content, h):
+    def __init__(self, content, h, algo):
         self.n = 0
         self.data_len = 0
         self.opened = []
@@ -23,9 +23,15 @@ class Puzzle:
         self.heuristic_dict = {
             "eu" : self.get_euclidian_distance,
             "mn" : self.get_manhattan_distance,
-            "mp" : self.get_misplaced_tiles_distance}
-
+            "mp" : self.get_misplaced_tiles_distance
+        }
+        self.algorithm_dict = {
+            "a" : self.astar_strategy,
+            "u": self.uniform_strategy,
+            "g": self.greedy_strategy
+        }
         self.heuristic = self.heuristic_dict[h]
+        self.f = self.algorithm_dict[algo]
 
         heapify(self.opened)
         self.parse_content(content)
@@ -103,8 +109,14 @@ class Puzzle:
                 dist += 1
         return dist
 
-    def f(self, current):
+    def astar_strategy(self, current):
         return self.h(current) + current.level
+
+    def uniform_strategy(self, current):
+        return current.level
+
+    def greedy_strategy(self, current):
+        return self.h(current)
 
     def h(self, current):
         return self.heuristic(current)
@@ -147,34 +159,6 @@ class Puzzle:
             elif d == "u":
                 i -= 1
 
-    # def inversions_count(self, line_input):
-    #     #     inv = 0
-    #     #     for i in range(self.data_len - 1):
-    #     #         for j in range(i + 1, self.data_len):
-    #     #             if self.line_goal.index(line_input[i]) > self.line_goal.index(line_input[j]):
-    #     #                 inv += 1
-    #     #     return inv
-    #     #
-    #     #
-    #     # def is_solvable(self):
-    #     #     line_input = list(chain.from_iterable(self.initial_data))
-    #     #     self.line_goal = list(chain.from_iterable(self.goal_data))
-    #     #     inv_count = self.inversions_count(line_input)
-    #     #
-    #     #     check_zero_position = abs(line_input.index(0) // self.n - self.line_goal.index(0) // self.n) + abs(line_input.index(0) % self.n - self.line_goal.index(0) % self.n)
-    #     #     if check_zero_position % 2 == 0 and inv_count % 2 == 0:
-    #     #         return True
-    #     #     if check_zero_position % 2 == 1 and inv_count % 2 == 1:
-    #     #         return True
-    #     #     if self.n % 2:
-    #     #         return not inv_count % 1
-    #     #     else:
-    #     #         pos = self.line_goal.index(0) // self.n
-    #     #         if pos & 1:
-    #     #             return not inv_count % 1
-    #     #         else:
-    #     #             return inv_count % 1
-
     def inversions_count(self, line_input, element, idx):
         inv = 0
         element_row = self.line_goal.index(element) / self.n
@@ -208,14 +192,20 @@ class Puzzle:
             return inv % 2 == 0
 
     def print_start(self):
-        print(f"Input puzzle ({self.n}x{self.n}):")
-        if self.heuristic == self.get_euclidian_distance:
-            print("Heuristic is Euclidian distance")
-        elif self.heuristic == self.get_manhattan_distance:
-            print("Heuristic is Manhattan distance")
-        elif self.heuristic == self.get_misplaced_tiles_distance:
-            print("Heuristic is Misplaced tiles")
+        if self.f == self.astar_strategy:
+            print("Algorithm: A* search")
+        elif self.f == self.uniform_strategy:
+            print("Algorithm: Uniform-cost search")
+        elif self.f == self.greedy_strategy:
+            print("Algorithm: Greedy search")
 
+        if self.heuristic == self.get_euclidian_distance:
+            print("Heuristic: Euclidian distance")
+        elif self.heuristic == self.get_manhattan_distance:
+            print("Heuristic: Manhattan distance")
+        elif self.heuristic == self.get_misplaced_tiles_distance:
+            print("Heuristic: Misplaced tiles")
+        print(f"Input puzzle ({self.n}x{self.n}):")
         for i in self.initial_data:
             print(i)
 
@@ -238,7 +228,7 @@ class Puzzle:
 
     def solve(self):
         if self.is_solvable():
-            print("is solvable")
+            print("is solvable\n")
             try:
                 t1 = datetime.datetime.now()
                 initial_state = State(self.initial_data)
